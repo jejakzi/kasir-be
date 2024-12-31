@@ -4,11 +4,11 @@ const UserModel = require('./userModel');
 
 const sequelize = new Sequelize({
     dialect: 'mysql',
-    host: 'localhost',
+    host: 'sql.freedb.tech',
     port: 3306,
-    database: 'tugas_8',
-    username: 'root',
-    password: ''
+    database: 'freedb_freedbmysql',
+    username: 'freedb_freedbroot',
+    password: '9RqAzd@%N3mG!rr'
 });
 
 const User = UserModel(sequelize);

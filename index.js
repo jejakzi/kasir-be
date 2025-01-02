@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 9002;
 app.use(cors());
 app.use(express.json());
 app.use('/auth', authRoutes);
-app.use("/images", express.static('images'))
+app.use("/images", express.static(path.join(__dirname, 'images')))
 
 sequelize.sync().then(() => {
     app.listen(PORT, () => {

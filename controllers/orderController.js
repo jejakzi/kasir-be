@@ -122,6 +122,48 @@ exports.getStrukByOrderId = async (req, res) => {
     }
 };
 
+exports.getListOrder = async (req, res) => {
+    try {
+        const { name = "", order_type_id="" } = req.query;
+        const orderQuery = `
+            SELECT o.id, o.order_number, o.createdAt, o.customer_name,
+            ot.order_type_name, r.table_no, o.total
+            FROM orders o
+            JOIN order_types ot ON ot.id = o.order_type_id
+            JOIN restaurant_tables r ON r.id = o.no_table_id
+            WHERE (:name IS NULL OR o.customer_name LIKE :name)
+            AND (:order_type_id IS NULL OR o.order_type_id = :order_type_id)
+        `;
+
+        const replacements = {
+            name: name ? `%${name}%` : null,
+            order_type_id: order_type_id || null,
+        };
+
+        const orders = await sequelize.query(orderQuery, {
+            type: sequelize.QueryTypes.SELECT,
+            replacements,
+        });
+
+        const response = orders.map(order => ({
+            id: order.id,
+            order_number: order.order_number,
+            order_date: formatOrderDate(order.createdAt),
+            customer_name: order.customer_name,
+            order_type_name: order.order_type_name,
+            table_no: order.table_no,
+            total: order.total
+        }));
+
+        res.json({
+            data: response
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 exports.listTable = async (req, res) => {
     try {
 

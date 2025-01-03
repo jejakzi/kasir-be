@@ -16,7 +16,7 @@ exports.createMenu = async (req, res) => {
 
 exports.readAllMenu = async (req, res) => {
     try {
-        const { category = 4, page_no = 1, page_size = 10 } = req.query;
+        let { category = 4, page_no = 1, page_size = 10, keywords = "" } = req.query;
 
         // Hitung offset berdasarkan page_no dan page_size
         const offset = (page_no - 1) * page_size;
@@ -33,16 +33,21 @@ exports.readAllMenu = async (req, res) => {
         });
 
         const totalItems = totalResult[0].total;
+        if(keywords!=""){
+            category = 4
+        }
 
         const menuQuery = `
             SELECT m.id, m.name, c.name AS category_name, m.price, m.description, m.image_name
             from menus m JOIN categories c ON m.category_id = c.id
             where (m.category_id = :category OR :category = 4)
+            and (:keywords IS NULL OR m.name LIKE :keywords)
             LIMIT :page_size OFFSET :offset
         `;
         const menus = await sequelize.query(menuQuery, {
             type: sequelize.QueryTypes.SELECT,
-            replacements: { category, page_size: parseInt(page_size, 10), offset: parseInt(offset, 10) }
+            replacements: { category, page_size: parseInt(page_size, 10), 
+                offset: parseInt(offset, 10), keywords: keywords ? `%${keywords}%` : null, }
         });
         const baseUrl = `${req.protocol}://${req.get('host')}/images`;
         const response = menus.map(menu => ({

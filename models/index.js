@@ -1,6 +1,9 @@
 const mysql = require('mysql2');
 const { Sequelize } = require('sequelize');
 const UserModel = require('./userModel');
+const CategoryModel = require('./categoryModel');
+const MenuModel = require('./menuModel');
+const OrderModel = require('./orderModel');
 
 const sequelize = new Sequelize({
     dialect: 'mysql',
@@ -21,6 +24,9 @@ const sequelize = new Sequelize({
 // });
 
 const User = UserModel(sequelize);
+const Category = CategoryModel(sequelize);
+const Menu = MenuModel(sequelize);
+const Order = OrderModel(sequelize);
 
 sequelize.authenticate()
     .then(() => {
@@ -40,5 +46,8 @@ sequelize.sync({ alter: true })
 
 module.exports = {
     sequelize,
-    User
+    User,
+    Category,
+    Menu,
+    Order
 };

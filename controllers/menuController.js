@@ -40,18 +40,18 @@ exports.readAllMenu = async (req, res) => {
             where (m.category_id = :category OR :category = 0)
             LIMIT :page_size OFFSET :offset
         `;
-
         const menus = await sequelize.query(menuQuery, {
             type: sequelize.QueryTypes.SELECT,
             replacements: { category, page_size: parseInt(page_size, 10), offset: parseInt(offset, 10) }
         });
+        const baseUrl = `${req.protocol}://${req.get('host')}/images`;
         const response = menus.map(menu => ({
             id: menu.id,
             name: menu.name,
             category_name: menu.category_name,
             price: menu.price,
             description: menu.description,
-            image_name: menu.image_name
+            image_url: `${baseUrl}/${menu.image_name}`
         }));
 
         res.json({

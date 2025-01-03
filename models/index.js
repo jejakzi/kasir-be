@@ -4,6 +4,9 @@ const UserModel = require('./userModel');
 const CategoryModel = require('./categoryModel');
 const MenuModel = require('./menuModel');
 const OrderModel = require('./orderModel');
+const OrderTypeModel = require('./orderTypeModel');
+const RestaurantTableModel = require('./restaurantTableModel');
+const OrderDetailModel = require('./orderDetailModel');
 
 const sequelize = new Sequelize({
     dialect: 'mysql',
@@ -27,6 +30,9 @@ const User = UserModel(sequelize);
 const Category = CategoryModel(sequelize);
 const Menu = MenuModel(sequelize);
 const Order = OrderModel(sequelize);
+const OrderType = OrderTypeModel(sequelize);
+const RestaurantTable = RestaurantTableModel(sequelize);
+const OrderDetail = OrderDetailModel(sequelize);
 
 sequelize.authenticate()
     .then(() => {
@@ -49,5 +55,8 @@ module.exports = {
     User,
     Category,
     Menu,
-    Order
+    Order,
+    OrderType,
+    RestaurantTable,
+    OrderDetail
 };

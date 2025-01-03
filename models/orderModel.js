@@ -7,10 +7,15 @@ module.exports = (sequelize) => {
             primaryKey: true,
             autoIncrement: true,
         },
+        order_number: { type: DataTypes.STRING, allowNull: false },
         order_type_id: { type: DataTypes.INTEGER, allowNull: false },
         customer_name: { type: DataTypes.STRING, allowNull: false },
-        no_table: {type: DataTypes.INTEGER, allowNull:false},
-        total: {type: DataTypes.DOUBLE, allowNull: true}
+        no_table_id: {type: DataTypes.INTEGER, allowNull:true},
+        sub_total: {type: DataTypes.DOUBLE, allowNull: true},
+        tax: {type: DataTypes.DOUBLE, allowNull: true},
+        total: {type: DataTypes.DOUBLE, allowNull: true},
+        paid: {type: DataTypes.DOUBLE, allowNull: true},
+        changes: {type: DataTypes.DOUBLE, allowNull: true}
     });
     return Order;
 };

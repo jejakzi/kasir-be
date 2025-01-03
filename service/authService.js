@@ -16,7 +16,7 @@ exports.registerUser = async (username, email, password) => {
 // Fungsi untuk mengambil pengguna berdasarkan username
 exports.getUserByUsername = async (username) => {
     const [user] = await sequelize.query(
-        `SELECT id, username, password FROM users WHERE username = :username`,
+        `SELECT id, email, username, password, role FROM users WHERE username = :username`,
         { replacements: { username }, type: sequelize.QueryTypes.SELECT }
     );
     return user;

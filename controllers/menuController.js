@@ -16,7 +16,7 @@ exports.createMenu = async (req, res) => {
 
 exports.readAllMenu = async (req, res) => {
     try {
-        const { category = 0, page_no = 1, page_size = 10 } = req.query;
+        const { category = 4, page_no = 1, page_size = 10 } = req.query;
 
         // Hitung offset berdasarkan page_no dan page_size
         const offset = (page_no - 1) * page_size;
@@ -24,7 +24,7 @@ exports.readAllMenu = async (req, res) => {
         const countQuery = `
         SELECT COUNT(*) AS total
         FROM menus m 
-        WHERE (m.category_id = :category OR :category = 0)
+        WHERE (m.category_id = :category OR :category = 4)
         `;
 
         const totalResult = await sequelize.query(countQuery, {
@@ -37,7 +37,7 @@ exports.readAllMenu = async (req, res) => {
         const menuQuery = `
             SELECT m.id, m.name, c.name AS category_name, m.price, m.description, m.image_name
             from menus m JOIN categories c ON m.category_id = c.id
-            where (m.category_id = :category OR :category = 0)
+            where (m.category_id = :category OR :category = 4)
             LIMIT :page_size OFFSET :offset
         `;
         const menus = await sequelize.query(menuQuery, {

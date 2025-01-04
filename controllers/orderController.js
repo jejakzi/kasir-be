@@ -3,14 +3,21 @@ const { sequelize, Order, OrderType, RestaurantTable, OrderDetail } = require(".
 function formatOrderDate(date) {
     const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
     const d = new Date(date);
-    const dayName = days[d.getDay()];
-    const time = d.toLocaleTimeString('id-ID', {
+    const options = {
+        timeZone: 'Asia/Jakarta',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
-    }).replace(/\./g, ':'); 
+        hourCycle: 'h23'
+    };
+    const formatter = new Intl.DateTimeFormat('id-ID', options);
+    const formattedParts = formatter.formatToParts(d);
 
-    const formattedDate = `${dayName}, ${d.toLocaleDateString('id-ID')} ${time}`;
+    const dayName = days[d.getUTCDay()];
+    const formattedDate = `${dayName}, ${formattedParts[4].value}/${formattedParts[2].value}/${formattedParts[0].value} ${formattedParts[6].value}:${formattedParts[8].value}:${formattedParts[10].value}`;
     return formattedDate;
 }
 
@@ -47,15 +54,70 @@ exports.createOrder = async (req, res) => {
                 await OrderDetail.bulkCreate(orderDetails, { transaction });
             }
     
-            await transaction.commit();
+            // Commit the transaction
+        await transaction.commit();
 
-        res.status(201).json({ 
+        // Retrieve order details to generate the receipt
+        const orderQuery = `
+            SELECT o.id, o.order_number, o.createdAt, o.customer_name,
+            ot.order_type_name, r.table_no, o.sub_total, o.tax,
+            o.total, o.paid, o.changes
+            FROM orders o
+            JOIN order_types ot ON ot.id = o.order_type_id
+            JOIN restaurant_tables r ON r.id = o.no_table_id
+            WHERE o.id = :id
+        `;
+        const orderResult = await sequelize.query(orderQuery, {
+            type: sequelize.QueryTypes.SELECT,
+            replacements: { id: orderId }
+        });
+
+        if (orderResult.length === 0) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        const order = orderResult[0];
+
+        const orderDetailQuery = `
+            SELECT od.id, m.name AS menu_name, od.amount, od.price, od.price_total, od.note
+            FROM order_details od
+            JOIN menus m ON m.id = od.menu_id
+            WHERE od.order_id = :id
+        `;
+        const orderDetails = await sequelize.query(orderDetailQuery, {
+            type: sequelize.QueryTypes.SELECT,
+            replacements: { id: orderId }
+        });
+
+        // Format the response
+        const response = {
+            id: order.id,
+            order_number: order.order_number,
+            order_date: formatOrderDate(order.createdAt),
+            customer_name: order.customer_name,
+            order_type_name: order.order_type_name,
+            table_no: order.table_no,
+            sub_total: order.sub_total,
+            tax: order.tax,
+            total: order.total,
+            paid: order.paid,
+            changes: order.changes,
+            order_details: orderDetails.map(detail => ({
+                id: detail.id,
+                menu_name: detail.menu_name,
+                amount: detail.amount,
+                price: detail.price,
+                price_total: detail.price_total,
+                note: detail.note
+            }))
+        };
+
+        res.status(201).json({
             message: 'Order created successfully',
-            data: {
-                order_id: orderId
-            }
-         });
+            data: response
+        });
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: error.message });
     }
 };

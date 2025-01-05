@@ -1,12 +1,10 @@
-const { sequelize, Category } = require("../models");
+const categoryService = require('../service/categoryService');
 
 exports.createCategory = async (req, res) => {
     try {
-        const { name} = req.body;
-        
-        await Category.create({
-            name
-        });
+        const { name } = req.body;
+
+        await categoryService.createCategory(name);
 
         res.status(201).json({ message: 'Category created successfully' });
     } catch (error) {
@@ -16,19 +14,14 @@ exports.createCategory = async (req, res) => {
 
 exports.readAllCategory = async (req, res) => {
     try {
-        const categoryQuery = `
-            SELECT * from categories
-        `;
-
-        const categories = await sequelize.query(categoryQuery, {
-            type: sequelize.QueryTypes.SELECT,
-        });
+        const categories = await categoryService.getAllCategories();
+        
         const response = categories.map(category => ({
             id: category.id,
             name: category.name
         }));
 
-        res.json({data :response});
+        res.json({ data: response });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
